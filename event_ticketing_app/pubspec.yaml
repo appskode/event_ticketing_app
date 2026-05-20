@@ -1,0 +1,51 @@
+name: event_ticket_app
+description: "Event Ticket App"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  # Align with current stable Flutter (e.g. 3.38.x) and its bundled Dart (3.10.x).
+  sdk: ^3.10.0
+  flutter: ">=3.38.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^3.3.1
+  dio: ^5.9.2
+  flutter_secure_storage: ^10.2.0
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.9.0
+  go_router: ^17.2.3
+  flutter_screenutil: ^5.9.3
+  qr_flutter: ^4.1.0
+  cached_network_image: ^3.4.1
+  intl: ^0.20.2
+  flutter_svg: ^2.3.0
+  connectivity_plus: ^7.1.1
+  shared_preferences: ^2.5.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  flutter_lints: ^6.0.0
+  build_runner: ^2.15.0
+  # 3.2.5+ pulls analyzer/meta that conflict with flutter_test + Riverpod 3 on stable.
+  freezed: ">=3.1.0 <3.2.5"
+  json_serializable: ^6.8.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/image/
+
+# path_provider_foundation 2.6.0+ depends on package:objective_c (Dart FFI).
+# On iOS Simulator that often fails to load (DOBJC_initializeApi / dlopen
+# "objective_c.framework/objective_c"), which breaks path_provider used by
+# flutter_cache_manager → CachedNetworkImage stays on the loading placeholder.
+dependency_overrides:
+  path_provider_foundation: 2.5.1

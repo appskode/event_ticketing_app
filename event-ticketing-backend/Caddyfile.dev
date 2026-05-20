@@ -1,0 +1,11 @@
+# Local HTTPS reverse proxy for Laravel (php artisan serve on :8001).
+# Install Caddy: https://caddyserver.com/docs/install#homebrew-mac
+# Run: composer serve:https
+{
+	auto_https disable_redirects
+}
+
+https://127.0.0.1:8000 https://localhost:8000 {
+	tls internal
+	reverse_proxy 127.0.0.1:8001
+}
