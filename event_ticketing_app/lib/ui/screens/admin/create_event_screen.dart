@@ -30,6 +30,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
   DateTime? _saleEndDate;
   bool _allowCancellation = true;
   int _cancellationHours = 24;
+  String _category = 'general';
   bool _isLoading = false;
 
   final List<Map<String, dynamic>> _ticketTypes = [];
@@ -49,8 +50,9 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
   void _updateSaleEndDate(DateTime date) => setState(() => _saleEndDate = date);
   void _updateAllowCancellation(bool? value) =>
       setState(() => _allowCancellation = value ?? false);
-  void _updateCancellationHours(String value) =>
-      _cancellationHours = int.tryParse(value) ?? 24;
+  void _updateCancellationHours(String value) => setState(
+        () => _cancellationHours = int.tryParse(value) ?? 24,
+      );
   void _addTicketType(Map<String, dynamic> ticketType) =>
       setState(() => _ticketTypes.add(ticketType));
   void _removeTicketType(int index) =>
@@ -91,6 +93,8 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                       descriptionController: _descriptionController,
                       locationController: _locationController,
                       imageUrlController: _imageUrlController,
+                      categoryKey: _category,
+                      onCategoryChanged: (v) => setState(() => _category = v),
                       eventDate: _eventDate,
                       saleStartDate: _saleStartDate,
                       saleEndDate: _saleEndDate,
@@ -177,10 +181,11 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final eventData = {
+      final eventData = <String, dynamic>{
         'name': _nameController.text.trim(),
         'description': _descriptionController.text.trim(),
         'location': _locationController.text.trim(),
+        'category': _category,
         'image_url': _imageUrlController.text.trim().isEmpty
             ? null
             : _imageUrlController.text.trim(),
@@ -188,30 +193,26 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
         'sale_start_date': _saleStartDate!.toIso8601String(),
         'sale_end_date': _saleEndDate!.toIso8601String(),
         'allow_cancellation': _allowCancellation,
-        'cancellation_hours_before':
-            _allowCancellation ? _cancellationHours : null,
       };
+      if (_allowCancellation) {
+        eventData['cancellation_hours_before'] = _cancellationHours;
+      }
 
-      final success =
+      final created =
           await ref.read(eventsProvider.notifier).createEvent(eventData);
 
-      if (success) {
-        final events = ref.read(eventsProvider).events;
-        if (events.isNotEmpty) {
-          final createdEvent = events.first;
+      if (created != null) {
+        for (final ticketType in _ticketTypes) {
+          final ticketData = {
+            'name': ticketType['name'],
+            'description': ticketType['description'],
+            'price': ticketType['price'],
+            'total_quantity': ticketType['quantity'],
+          };
 
-          for (final ticketType in _ticketTypes) {
-            final ticketData = {
-              'name': ticketType['name'],
-              'description': ticketType['description'],
-              'price': ticketType['price'],
-              'total_quantity': ticketType['quantity'],
-            };
-
-            await ref
-                .read(eventServiceProvider)
-                .addTicketType(createdEvent.id, ticketData);
-          }
+          await ref
+              .read(eventServiceProvider)
+              .addTicketType(created.id, ticketData);
         }
 
         if (mounted) {

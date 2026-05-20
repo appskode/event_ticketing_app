@@ -251,17 +251,24 @@ class EventsNotifier extends StateNotifier<EventsState> {
     return 'Date';
   }
 
-  Future<bool> createEvent(Map<String, dynamic> eventData) async {
+  /// Returns the created event (with id) on success. The list is refreshed
+  /// after create — callers must not rely on [state.events.first] for the new id
+  /// because the API sorts by event_date, not creation order.
+  Future<Event?> createEvent(Map<String, dynamic> eventData) async {
     if (!await _connectivity.isOnline) {
       state = state.copyWith(
         error: 'You\'re offline. Connect to the internet to create events.',
       );
-      return false;
+      return null;
     }
     try {
-      await _eventService.createEvent(eventData);
+      final response = await _eventService.createEvent(eventData);
+      final raw = response['data'];
+      final created = raw is Map<String, dynamic>
+          ? Event.fromJson(raw)
+          : null;
       await loadEvents(refresh: true);
-      return true;
+      return created;
     } catch (e) {
       state = state.copyWith(error: userFacingError(e));
       rethrow;

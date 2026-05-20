@@ -3,11 +3,34 @@ import 'package:flutter/material.dart';
 
 import 'date_selector_widget.dart';
 
+/// Keys must match `App\Models\Event::CATEGORIES` on the Laravel API.
+const List<String> kAdminEventCategoryKeys = [
+  'music',
+  'tech',
+  'food_drink',
+  'sports',
+  'arts',
+  'comedy',
+  'business',
+  'wellness',
+  'general',
+];
+
+String _adminCategoryLabel(String key) {
+  if (key == 'food_drink') return 'Food & drink';
+  return key.replaceAll('_', ' ').split(' ').map((w) {
+    if (w.isEmpty) return w;
+    return '${w[0].toUpperCase()}${w.substring(1)}';
+  }).join(' ');
+}
+
 class EventFormWidget extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController descriptionController;
   final TextEditingController locationController;
   final TextEditingController imageUrlController;
+  final String categoryKey;
+  final ValueChanged<String> onCategoryChanged;
   final DateTime? eventDate;
   final DateTime? saleStartDate;
   final DateTime? saleEndDate;
@@ -25,6 +48,8 @@ class EventFormWidget extends StatelessWidget {
     required this.descriptionController,
     required this.locationController,
     required this.imageUrlController,
+    required this.categoryKey,
+    required this.onCategoryChanged,
     required this.eventDate,
     required this.saleStartDate,
     required this.saleEndDate,
@@ -82,6 +107,28 @@ class EventFormWidget extends StatelessWidget {
           ),
           validator: (value) =>
               value?.isEmpty == true ? 'Please enter location' : null,
+        ),
+        verticalSpaceSmall,
+        DropdownButtonFormField<String>(
+          key: ValueKey('admin_category_$categoryKey'),
+          initialValue: categoryKey,
+          decoration: const InputDecoration(
+            labelText: 'Category*',
+            border: OutlineInputBorder(),
+          ),
+          items: kAdminEventCategoryKeys
+              .map(
+                (k) => DropdownMenuItem(
+                  value: k,
+                  child: Text(_adminCategoryLabel(k)),
+                ),
+              )
+              .toList(),
+          onChanged: (value) {
+            if (value != null) onCategoryChanged(value);
+          },
+          validator: (value) =>
+              value == null || value.isEmpty ? 'Please select a category' : null,
         ),
         verticalSpaceSmall,
         TextFormField(

@@ -26,6 +26,16 @@ Never handleDioError(DioException e) {
         message = data['message'] as String? ??
             data['error'] as String? ??
             message;
+        // Laravel validation (422) often returns { "message": "...", "errors": { "field": ["..."] } }
+        if (message == 'Something went wrong' || message.isEmpty) {
+          final errors = data['errors'];
+          if (errors is Map && errors.isNotEmpty) {
+            final first = errors.values.first;
+            if (first is List && first.isNotEmpty) {
+              message = first.first as String? ?? message;
+            }
+          }
+        }
       }
       throw Exception(message);
     case DioExceptionType.cancel:
