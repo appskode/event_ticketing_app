@@ -11,6 +11,8 @@ class AppTheme {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: seedColor,
       brightness: brightness,
+    ).copyWith(
+      primary: const Color(0xFF0BBBB6),
     );
     final appColors = brightness == Brightness.light
         ? AppColorsExtension.light
