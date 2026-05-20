@@ -171,7 +171,7 @@ class EventService extends BaseService
                 'sale_start_date' => 'required|date|before:event_date',
                 'sale_end_date' => 'required|date|after:sale_start_date|before:event_date',
                 'allow_cancellation' => 'boolean',
-                'cancellation_hours_before' => 'integer|min:1|max:168',
+                'cancellation_hours_before' => 'nullable|integer|min:1|max:168',
             ]);
 
             return Event::create($validatedData);
